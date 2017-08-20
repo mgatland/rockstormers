@@ -93,7 +93,7 @@ expSprites.push({x:64, y:1, width:12, height: 12})
 
 ///// Game stuff /////
 
-var scale = 2
+var scale = 1
 var friction = 0.98
 var shots = []
 var rocks = []
@@ -115,7 +115,7 @@ for (var i = 0; i < 2; i++) {
 		sprite:playerSprites[i],
 		turnSpeed: 0.06,
 		vel:{x:0,y:0},
-		thrust:0.2,
+		thrust:0.1,
 		reload:0,
 		reloadRate:15,
 		shotForce:10,
