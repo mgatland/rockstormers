@@ -1,9 +1,13 @@
 "use strict"
 
 //super-large game area
-//maybe make it not so screen-size dependent
-//redo art to suit tiny sprites
+//make it not so screen-size dependent
 //framerate independence?
+//sound
+//gamepad controls
+//title screen
+
+//[x] redo art to suit tiny sprites
 
 //DOM stuff
 var canvas = document.querySelector(".gameCanvas")
@@ -79,13 +83,14 @@ function setKey(keyCode, state) {
 var playerSprites = []
 playerSprites.push({x:0, y:0, width:15, height: 15})
 playerSprites.push({x:16, y:0, width:15, height: 15})
-var shotSprite = {x:21, y:28, width:4, height: 4}
+var shotSprite = {x:17, y:37, width:7, height: 7}
 var rockSprite = []
-rockSprite[0] = {x:0, y:16, width:20, height: 20}
-rockSprite[1] = {x:0, y:37, width:16, height: 16}
-rockSprite[2] = {x:21, y:16, width:10, height: 10}
+rockSprite[0] = {x:0, y:54, width:40, height: 40}
+rockSprite[1] = {x:0, y:16, width:20, height: 20}
+rockSprite[2] = {x:0, y:37, width:16, height: 16}
+//rockSprite[3] = {x:21, y:16, width:10, height: 10}
 
-var prizeSprite = {x:21, y:38, width:10, height: 14}
+var prizeSprite = {x:27, y:28, width:14, height: 24}
 
 var expSprites = []
 expSprites.push({x:34, y:0, width:28, height: 28})
@@ -98,12 +103,12 @@ var friction = 0.98
 var shots = []
 var rocks = []
 var exps = []
-var shotLifetime = 60
+var shotLifetime = 30
 var prize = {
 	pos:{x:0, y:0, angle:0},
 	sprite:prizeSprite,
 	radius:prizeSprite.height*scale/2,
-	mass:3,
+	mass:20,
 	vel: {x:0, y:0}}
 teleportPrize()
 var messageDisplayTime = 45
@@ -121,7 +126,7 @@ for (var i = 0; i < 2; i++) {
 		shotForce:10,
 		radius:playerSprites[i].width*scale/2-2,
 		alive: true,
-		mass: 3,
+		mass: 3,/*lower mass but we are sloweds by friction*/
 		deaths:0,
 		score:0,
 		messages:[],
@@ -134,7 +139,7 @@ players[0].spawnPoint.y = height / 2
 players[1].spawnPoint.x = width * 3 / 4
 players[1].spawnPoint.y = height / 2
 players.forEach(p => {p.pos.x = p.spawnPoint.x; p.pos.y = p.spawnPoint.y})
-var rockMass = [20, 10, 5]
+var rockMass = [40, 20, 10]
 var minRockDensity = 200*200;
 
 addEdgeRock()
@@ -340,7 +345,7 @@ function addEdgeRock() {
 		var x = Math.random() * width
 		var y = 0
 	}
-	var rock = addRock(x, y, 0)
+	var rock = addRock(x, y, Math.random() < 0.5 ? 0 : 1)
 }
 
 function addRock(x, y, type) {
