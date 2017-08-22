@@ -1,6 +1,5 @@
 "use strict"
 
-//sound
 //title screen
 
 //make it not so screen-size dependent
@@ -13,6 +12,7 @@
 //[x] gamepad controls
 //[x] spawn effects to help spot things
 //[x] game ends when you reach a certain score
+//[x] sound
 
 //DOM stuff
 var canvas = document.querySelector(".gameCanvas")
@@ -57,7 +57,7 @@ window.addEventListener("keyup", function (e) {
 
 function setKey(keyCode, state) {
 	var p0 = players[0]
-	var p1 = players[1]
+	var p1 = players[1] ? players[1] : players[0]
 	switch (keyCode) {
 		case 37: p0.left = state
 		  break
@@ -87,7 +87,7 @@ function setKey(keyCode, state) {
 		 	if (state===true) {
 		 		highConstrast = !highConstrast
 		 		var spriteOffset = highConstrast ? 2 : 0
-		 		players.forEach(p => p.sprite = playerSprites[p.index+spriteOffset])
+		 		players.forEach(p => p.sprite = playerSprites[(p.index+spriteOffset) % playerSprites.length])
 		 	}
 		 	break		 
 	}
@@ -128,11 +128,15 @@ var prize = {
 	sprite:prizeSprite,
 	radius:prizeSprite.height*scale/2,
 	mass:20,
-	vel: {x:0, y:0}}
+	vel: {x:0, y:0},
+	alive: true
+	}
 teleportPrize()
 var messageDisplayTime = 45
 var players = []
-for (var i = 0; i < 2; i++) {
+var defaultPlayerCount = 2
+var playerCount = getPlayerCount()
+for (var i = 0; i < playerCount; i++) {
 	players.push(
 	{
 		pos:{x:200,y:300, angle:0},
@@ -155,8 +159,20 @@ for (var i = 0; i < 2; i++) {
 }
 players[0].spawnPoint.x = width / 4
 players[0].spawnPoint.y = height / 2
-players[1].spawnPoint.x = width * 3 / 4
-players[1].spawnPoint.y = height / 2
+if (players[1]) {
+	players[1].spawnPoint.x = width * 3 / 4
+	players[1].spawnPoint.y = height / 2	
+}
+if (players[2]) {
+	players[2].spawnPoint.x = width / 4
+	players[2].spawnPoint.y = height * 3 / 4
+	players[0].spawnPoint.y = height / 4
+}
+if (players[3]) {
+	players[3].spawnPoint.x = width * 3 / 4
+	players[3].spawnPoint.y = height * 3 / 4
+	players[1].spawnPoint.y = height / 4
+}
 players.forEach(p => {p.pos.x = p.spawnPoint.x; p.pos.y = p.spawnPoint.y})
 var rockMass = [40, 20, 10]
 var minRockDensity = 200*200;
@@ -193,7 +209,7 @@ function draw() {
 
 	drawHud()
 
-	drawSprite(prize.pos, prize.sprite)
+	if (prize.alive) drawSprite(prize.pos, prize.sprite)
 	exps.forEach(function (exp) {
 		drawSprite(exp.pos, expSprites[exp.type])
 	})
@@ -212,7 +228,11 @@ function drawHud() {
 	ctx.textAlign = "left"
 	ctx.fillStyle = "white"
 	ctx.fillText("Score", 10, 40)
-	ctx.fillText(players[0].score + " vs " + players[1].score, 10, 70)
+	var scoreString = players[0].score
+	for(var i = 1; i < playerCount; i++) {
+		scoreString += " vs " + players[i].score
+	}
+	ctx.fillText(scoreString, 10, 70)
 
 	ctx.font = "20px monospace"
 	if (showHelp) {
@@ -249,9 +269,16 @@ function update() {
 	effects = effects.filter(e => e.lifetime > 0)
 
 
-	prize.pos.angle += 0.02
-	move(prize)
-	wrap(prize.pos)
+	if (prize.alive) {
+		prize.pos.angle += 0.02
+		move(prize)
+		wrap(prize.pos)
+	} else {
+		prize.respawnCounter--
+		if (prize.respawnCounter <= 0) {
+			teleportPrize()
+		}
+	}
 
 	//asteroid density
 	var area = width * height
@@ -280,6 +307,7 @@ function respawn(player) {
 	player.vel.x = 0
 	player.vel.y = 0
 	addEffect(player.pos, 0)
+	play("respawn")
 }
 
 function updatePlayers() {
@@ -315,6 +343,7 @@ function updatePlayers() {
 				}
 				moveInDirection(shot.pos, player.pos.angle, player.radius + shot.radius)
 				applyForce(shot.vel, player.pos.angle, player.shotForce)
+				play("shoot")
 				shots.push(shot)
 			}
 			if (player.reload > 0) {
@@ -330,7 +359,7 @@ function updatePlayers() {
 			if (collides(prize, player)) {
 				player.score += 10
 				addMessage(player, "+10")
-				teleportPrize()
+				destroyPrize()
 			}
 
 			var myHitFriend = collideList(player, players)
@@ -362,13 +391,14 @@ function doGamepad()
 {
 	gamepad.update()
 	gamepad.getEvents().forEach(e => {
-		players[e.i][e.key] = e.state
+		players[playerCount-1-e.i][e.key] = e.state
 	})
 }
 
 function explodePlayer(player)
 {
 	if (!player.alive) return;
+	play("playerExplode")
 	player.alive = false
 	player.deaths++
 	player.score--
@@ -382,13 +412,22 @@ function addMessage(player, messageString)
 	player.messages.push({text:messageString, age:0})
 }
 
+function destroyPrize() {
+	prize.respawnCounter = 30
+	prize.alive = false
+	play("pickup")
+	play("score")
+}
+
 function teleportPrize() {
+	prize.alive = true
 	prize.pos.x = Math.random() * width
 	prize.pos.y = Math.random() * height
 	prize.vel.x = 0
 	prize.vel.y = 0
 	addEffect(prize.pos, 1)
 	applyForce(prize.vel, Math.random() * Math.PI * 2, 1)
+	play("respawn")
 }
 
 function updateShots() {
@@ -401,17 +440,20 @@ function updateShots() {
 			transferVel(myRock.vel, shot.vel, 1 / myRock.mass)
 			shot.lifetime = 0
 			addExplosion(shot.pos, 1)
+			play("hitRock") //2 is ok, 3 is ok
 		}
 		var myP = collideList(shot, players)
 		if (myP) {
 			transferVel(myP.vel, shot.vel, 1 / myP.mass)
 			shot.lifetime = 0
 			addExplosion(shot.pos, 1)
+			play("playerHit")
 		}
 		if (collides(prize, shot)) {
 			transferVel(prize.vel, shot.vel, 1 / prize.mass)
 			shot.lifetime = 0
 			addExplosion(shot.pos, 1)
+			play("hitPrize")
 		}
 	})
 	shots = shots.filter(s => s.lifetime > 0)
@@ -541,7 +583,23 @@ function drawEffect(effect) {
 	ctx.stroke()
 }
 
+function getPlayerCount() {
+	var pCount = parseInt(getQueryVariable("p"))
+	if (pCount > 0 && pCount <= 4) return pCount
+	return defaultPlayerCount
+}
+
 //Utilities
+function getQueryVariable(variable)
+{
+   var query = window.location.search.substring(1)
+   var vars = query.split("&")
+   for (var i=0;i<vars.length;i++) {
+           var pair = vars[i].split("=")
+           if(pair[0] == variable){return pair[1]}
+   }
+   return(false)
+}
 
 function drawMessage(ent, text) {
 	ctx.font = "20px monospace"
