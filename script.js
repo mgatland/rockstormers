@@ -123,6 +123,7 @@ var rocks = []
 var exps = []
 var effects = []
 var shotLifetime = 30
+var shotMass = 1
 var prize = {
 	pos:{x:0, y:0, angle:0},
 	sprite:prizeSprite,
@@ -430,6 +431,7 @@ function teleportPrize() {
 	play("respawn")
 }
 
+
 function updateShots() {
 	shots.forEach(function (shot) {
 		shot.lifetime--
@@ -437,20 +439,20 @@ function updateShots() {
 		wrap(shot.pos)
 		var myRock = collideList(shot, rocks)
 		if (myRock) {
-			transferVel(myRock.vel, shot.vel, 1 / myRock.mass)
+			transferVel(myRock.vel, shot.vel, shotMass / myRock.mass)
 			shot.lifetime = 0
 			addExplosion(shot.pos, 1)
 			play("hitRock") //2 is ok, 3 is ok
 		}
 		var myP = collideList(shot, players)
 		if (myP) {
-			transferVel(myP.vel, shot.vel, 1 / myP.mass)
+			transferVel(myP.vel, shot.vel, shotMass / myP.mass)
 			shot.lifetime = 0
 			addExplosion(shot.pos, 1)
 			play("playerHit")
 		}
 		if (collides(prize, shot)) {
-			transferVel(prize.vel, shot.vel, 1 / prize.mass)
+			transferVel(prize.vel, shot.vel, shotMass / prize.mass)
 			shot.lifetime = 0
 			addExplosion(shot.pos, 1)
 			play("hitPrize")

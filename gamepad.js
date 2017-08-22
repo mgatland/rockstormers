@@ -1,12 +1,16 @@
 function Gamepad() {
     var deadZone = 0.5
-    var oldLeft, oldRight, oldUp, oldDown, oldShoot
+    var oldLeft = []
+    var oldRight = []
+    var oldUp = []
+    var oldDown = []
+    var oldShoot = []
     var downFunc, upFunc
     var events = []
 
     function simulateKey(newState, oldState, i, key)
     {
-        if (newState != oldState) {
+        if (newState != oldState[i]) {
             events.push({key:key, i:i, state:newState})
         }
     }
@@ -29,11 +33,11 @@ function Gamepad() {
         simulateKey(up, oldUp, i, "up")
         simulateKey(down, oldDown, i, "down")
         simulateKey(shoot, oldShoot, i, "shoot")
-        oldLeft = left
-        oldRight = right
-        oldUp = up
-        oldDown = down
-        oldShoot = shoot
+        oldLeft[i] = left
+        oldRight[i] = right
+        oldUp[i] = up
+        oldDown[i] = down
+        oldShoot[i] = shoot
     }
 
     this.getEvents = function () { return events }
