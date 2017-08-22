@@ -179,13 +179,15 @@ var rockMass = [40, 20, 10]
 var minRockDensity = 200*200;
 
 var highConstrast = false;
-var showHelp = true;
+var showHelp = false;
 var gamepad = new Gamepad();
 
 var scoreLimit = 100
 var gameState = "playing"
 var endMessage = ""
 var endTimer = 0
+var startTimerTime = 100
+var startTimer = startTimerTime
 
 addEdgeRock()
 addEdgeRock()
@@ -247,6 +249,13 @@ function drawHud() {
 		ctx.fillText("H - show help", 10, 100)
 	}
 
+	if (startTimer > 0) {
+		ctx.font = "50px monospace"
+		ctx.textAlign = "center"
+		ctx.fillStyle = "white"
+		ctx.fillText("Get the gem!", width/2, height/2)		
+	}
+
 	if (endMessage != "") {
 		ctx.font = "50px monospace"
 		ctx.textAlign = "center"
@@ -293,6 +302,7 @@ function update() {
 			gameState = "playing"
 			endMessage = ""
 			endTimer = 0
+			startTimer = startTimerTime
 			players.forEach(p => {
 				p.score = 0
 				respawn(p)
@@ -371,6 +381,10 @@ function updatePlayers() {
 
 			move(player)
 			wrap(player.pos)
+		}
+
+		if (startTimer > 0) {
+			startTimer--
 		}
 
 		if (gameState === "playing" && player.score >= scoreLimit) {
@@ -604,7 +618,7 @@ function getQueryVariable(variable)
 }
 
 function drawMessage(ent, text) {
-	ctx.font = "20px monospace"
+	ctx.font = "40px monospace"
 	ctx.textAlign = "center"
 	ctx.fillText(text, ent.pos.x, ent.pos.y - ent.radius - 10)
 }
