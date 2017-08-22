@@ -1,17 +1,18 @@
 "use strict"
 
-//gamepad controls
-//maybe have a game size option
-//game ends when you reach a certain score
 //sound
 //title screen
 
 //make it not so screen-size dependent
 //super-large game area
 //framerate independence?
+//maybe have a game size option
 
 //[x] high contrast mode
 //[x] redo art to suit tiny sprites
+//[x] gamepad controls
+//[x] spawn effects to help spot things
+//[x] game ends when you reach a certain score
 
 //DOM stuff
 var canvas = document.querySelector(".gameCanvas")
@@ -120,6 +121,7 @@ var friction = 0.98
 var shots = []
 var rocks = []
 var exps = []
+var effects = []
 var shotLifetime = 30
 var prize = {
 	pos:{x:0, y:0, angle:0},
@@ -163,6 +165,11 @@ var highConstrast = false;
 var showHelp = true;
 var gamepad = new Gamepad();
 
+var scoreLimit = 100
+var gameState = "playing"
+var endMessage = ""
+var endTimer = 0
+
 addEdgeRock()
 addEdgeRock()
 addEdgeRock()
@@ -190,6 +197,9 @@ function draw() {
 	exps.forEach(function (exp) {
 		drawSprite(exp.pos, expSprites[exp.type])
 	})
+	effects.forEach(function (effect) {
+		drawEffect(effect)
+	})
 	players.forEach(function (p) {
 		if (p.messages.length > 0) {
 			drawMessage(p, p.messages[0].text)
@@ -206,13 +216,21 @@ function drawHud() {
 
 	ctx.font = "20px monospace"
 	if (showHelp) {
-		ctx.fillText("Player 1: Arrow keys + spacebar", 10, 100)
-		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 120)
-		ctx.fillText("(no touchscreens sorry! but gamepads work!)", 10, 140)
-		ctx.fillText("H - hide help text", 10, 160)
-		ctx.fillText("I - toggle high contrast mode", 10, 180)
+		ctx.fillText("Get 100 points to win", 10, 100)
+		ctx.fillText("Player 1: Arrow keys + spacebar", 10, 120)
+		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 140)
+		ctx.fillText("(no touchscreens sorry! but gamepads work!)", 10, 160)
+		ctx.fillText("H - hide help text", 10, 180)
+		ctx.fillText("I - toggle high contrast mode", 10, 200)
 	} else {
 		ctx.fillText("H - show help", 10, 100)
+	}
+
+	if (endMessage != "") {
+		ctx.font = "50px monospace"
+		ctx.textAlign = "center"
+		ctx.fillStyle = "white"
+		ctx.fillText(endMessage, width/2, height/2)
 	}
 }
 
@@ -225,6 +243,12 @@ function update() {
 	})
 	exps = exps.filter(e => e.lifetime > 0)
 
+	effects.forEach(function (effect) {
+		effect.lifetime--
+	})
+	effects = effects.filter(e => e.lifetime > 0)
+
+
 	prize.pos.angle += 0.02
 	move(prize)
 	wrap(prize.pos)
@@ -235,19 +259,37 @@ function update() {
 		addEdgeRock()
 	}
 
+	if (gameState === "end") {
+		endTimer++
+		if (endTimer > 60*10) { //framerate dependent
+			gameState = "playing"
+			endMessage = ""
+			endTimer = 0
+			players.forEach(p => {
+				p.score = 0
+				respawn(p)
+			})
+		}
+	}
+}
+
+function respawn(player) {
+	player.alive = true
+	player.pos.x = player.spawnPoint.x
+	player.pos.y = player.spawnPoint.y
+	player.vel.x = 0
+	player.vel.y = 0
+	addEffect(player.pos, 0)
 }
 
 function updatePlayers() {
 	doGamepad()
 	players.forEach(function (player) {
+	
 		if (!player.alive) {
 			player.respawnCounter--
 			if (player.respawnCounter <= 0) {
-				player.alive = true
-				player.pos.x = player.spawnPoint.x
-				player.pos.y = player.spawnPoint.y
-				player.vel.x = 0
-				player.vel.y = 0
+				respawn(player)
 			}
 		} else
 		{
@@ -300,6 +342,12 @@ function updatePlayers() {
 			move(player)
 			wrap(player.pos)
 		}
+
+		if (gameState === "playing" && player.score >= scoreLimit) {
+			gameState = "end"
+			endMessage = "Player " + (player.index + 1) + " wins!"
+		}
+
 		if (player.messages.length > 0) {
 			player.messages[0].age++
 			if (player.messages[0].age > messageDisplayTime) {
@@ -339,6 +387,7 @@ function teleportPrize() {
 	prize.pos.y = Math.random() * height
 	prize.vel.x = 0
 	prize.vel.y = 0
+	addEffect(prize.pos, 1)
 	applyForce(prize.vel, Math.random() * Math.PI * 2, 1)
 }
 
@@ -421,6 +470,11 @@ function addExplosion(pos, type) {
 		lifetime:10 + (type == 0) ? 5:0, type:type})
 }
 
+function addEffect(pos, type) {
+	effects.push({ pos:{x:pos.x, y:pos.y},
+		lifetime:40, type:type})
+}
+
 function collideList(me, list) {
  return list.find(you => collides(you, me))
 }
@@ -474,6 +528,17 @@ function applyForce(vel, angle, thrust) {
 
 function resizeGame() {
 
+}
+
+function drawEffect(effect) {
+	ctx.strokeStyle = effect.type == 0 ? "cyan" : "white"
+	ctx.beginPath()
+	ctx.lineWidth = (effect.lifetime / 16)
+	ctx.moveTo(effect.pos.x, 0)
+	ctx.lineTo(effect.pos.x, height)
+	ctx.moveTo(0, effect.pos.y)
+	ctx.lineTo(width, effect.pos.y)
+	ctx.stroke()
 }
 
 //Utilities
