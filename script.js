@@ -363,7 +363,7 @@ function updatePlayers() {
 
 			var myRock = collideList(player, rocks)
 			if (myRock) {
-				explodeRock(myRock, player.vel)
+				explodeRock(myRock, player.vel, player.mass)
 				explodePlayer(player)
 			}
 
@@ -508,10 +508,10 @@ function addRock(x, y, type) {
 	return rock
 }
 
-function explodeRock(rock, expVel) {
+function explodeRock(rock, expVel, mass) {
 	addExplosion(rock.pos, 0)
-	//transferVel(rock.vel, expVel, 2 / rock.mass)
-	if (rock.type < 2) {
+	transferVel(rock.vel, expVel, mass / rock.mass)
+	/*if (rock.type < 2) {
 		for (var i = 0; i < 2; i++) {
 			var lilRock = addRock(
 				rock.pos.x,
@@ -520,7 +520,7 @@ function explodeRock(rock, expVel) {
 			transferVel(rock.vel, lilRock.vel, 1)
 		}
 	}
-	rock.alive = false
+	rock.alive = false*/
 }
 
 function addExplosion(pos, type) {
