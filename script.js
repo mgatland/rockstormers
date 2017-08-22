@@ -2,9 +2,10 @@
 
 //gamepad controls
 //maybe have a game size option
+//game ends when you reach a certain score
 //sound
-
 //title screen
+
 //make it not so screen-size dependent
 //super-large game area
 //framerate independence?
@@ -160,6 +161,7 @@ var minRockDensity = 200*200;
 
 var highConstrast = false;
 var showHelp = true;
+var gamepad = new Gamepad();
 
 addEdgeRock()
 addEdgeRock()
@@ -206,7 +208,7 @@ function drawHud() {
 	if (showHelp) {
 		ctx.fillText("Player 1: Arrow keys + spacebar", 10, 100)
 		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 120)
-		ctx.fillText("(no touchscreens sorry!)", 10, 140)
+		ctx.fillText("(no touchscreens sorry! but gamepads work!)", 10, 140)
 		ctx.fillText("H - hide help text", 10, 160)
 		ctx.fillText("I - toggle high contrast mode", 10, 180)
 	} else {
@@ -236,6 +238,7 @@ function update() {
 }
 
 function updatePlayers() {
+	doGamepad()
 	players.forEach(function (player) {
 		if (!player.alive) {
 			player.respawnCounter--
@@ -305,6 +308,14 @@ function updatePlayers() {
 		}
 
 	});
+}
+
+function doGamepad()
+{
+	gamepad.update()
+	gamepad.getEvents().forEach(e => {
+		players[e.i][e.key] = e.state
+	})
 }
 
 function explodePlayer(player)
