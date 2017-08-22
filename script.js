@@ -122,6 +122,8 @@ var shots = []
 var rocks = []
 var exps = []
 var effects = []
+var effectColor = ["purple","purple","purple","purple"]
+effectColor[-1] = "white"
 var shotLifetime = 30
 var shotMass = 1
 var prize = {
@@ -317,7 +319,7 @@ function respawn(player) {
 	player.pos.y = player.spawnPoint.y
 	player.vel.x = 0
 	player.vel.y = 0
-	addEffect(player.pos, 0)
+	addEffect(player.pos, player.index)
 	play("respawn")
 }
 
@@ -440,7 +442,7 @@ function teleportPrize() {
 	prize.pos.y = Math.random() * height
 	prize.vel.x = 0
 	prize.vel.y = 0
-	addEffect(prize.pos, 1)
+	addEffect(prize.pos, -1)
 	applyForce(prize.vel, Math.random() * Math.PI * 2, 1)
 	play("respawn")
 }
@@ -589,9 +591,10 @@ function resizeGame() {
 }
 
 function drawEffect(effect) {
-	ctx.strokeStyle = effect.type == 0 ? "cyan" : "white"
+	ctx.strokeStyle = effectColor[effect.type]
 	ctx.beginPath()
-	ctx.lineWidth = (effect.lifetime / 16)
+	var widthMulti = (effect.type == -1) ? 2: 1
+	ctx.lineWidth = (effect.lifetime / 16 * widthMulti)
 	ctx.moveTo(effect.pos.x, 0)
 	ctx.lineTo(effect.pos.x, height)
 	ctx.moveTo(0, effect.pos.y)
