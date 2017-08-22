@@ -8,7 +8,6 @@ function Gamepad() {
     {
         if (newState != oldState) {
             events.push({key:key, i:i, state:newState})
-            console.log(events[events.length-1])
         }
     }
 
