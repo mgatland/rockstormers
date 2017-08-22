@@ -1,12 +1,15 @@
 "use strict"
 
-//super-large game area
-//make it not so screen-size dependent
-//framerate independence?
-//sound
 //gamepad controls
-//title screen
+//maybe have a game size option
+//sound
 
+//title screen
+//make it not so screen-size dependent
+//super-large game area
+//framerate independence?
+
+//[x] high contrast mode
 //[x] redo art to suit tiny sprites
 
 //DOM stuff
@@ -75,6 +78,16 @@ function setKey(keyCode, state) {
 		 case 70: //f
 		 case 16: /*shift */p1.shoot = state
 		 	break
+		case 72: //h
+		 	if (state===true) showHelp = !showHelp
+		 	break
+		case 73: //i
+		 	if (state===true) {
+		 		highConstrast = !highConstrast
+		 		var spriteOffset = highConstrast ? 2 : 0
+		 		players.forEach(p => p.sprite = playerSprites[p.index+spriteOffset])
+		 	}
+		 	break		 
 	}
 }
 
@@ -83,6 +96,9 @@ function setKey(keyCode, state) {
 var playerSprites = []
 playerSprites.push({x:0, y:0, width:15, height: 15})
 playerSprites.push({x:16, y:0, width:15, height: 15})
+playerSprites.push({x:42, y:29, width:15, height: 15})
+playerSprites.push({x:58, y:29, width:15, height: 15})
+
 var shotSprite = {x:17, y:37, width:7, height: 7}
 var rockSprite = []
 rockSprite[0] = {x:0, y:54, width:40, height: 40}
@@ -142,6 +158,9 @@ players.forEach(p => {p.pos.x = p.spawnPoint.x; p.pos.y = p.spawnPoint.y})
 var rockMass = [40, 20, 10]
 var minRockDensity = 200*200;
 
+var highConstrast = false;
+var showHelp = true;
+
 addEdgeRock()
 addEdgeRock()
 addEdgeRock()
@@ -153,19 +172,6 @@ function tickGame() {
 
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.font = "30px monospace"
-	ctx.textAlign = "left"
-	ctx.fillStyle = "white"
-	ctx.fillText("Score", 10, 40)
-	ctx.fillText(players[0].score + " vs " + players[1].score, 10, 70)
-
-	//hint text
-	ctx.font = "20px monospace"
-	ctx.fillText("Player 1: Arrow keys + spacebar", 10, 100)
-	ctx.fillText("Player 2: WASD + Shift (or F)", 10, 120)
-	ctx.fillText("(no touchscreens sorry!)", 10, 140)
-
-
 	players.forEach(function (p) {
 		if (p.alive) drawSprite(p.pos, p.sprite)
 	})
@@ -175,6 +181,9 @@ function draw() {
 	rocks.forEach(function (rock) {
 		drawSprite(rock.pos, rockSprite[rock.type])
 	})
+
+	drawHud()
+
 	drawSprite(prize.pos, prize.sprite)
 	exps.forEach(function (exp) {
 		drawSprite(exp.pos, expSprites[exp.type])
@@ -184,6 +193,25 @@ function draw() {
 			drawMessage(p, p.messages[0].text)
 		}
 	})
+}
+
+function drawHud() {
+	ctx.font = "30px monospace"
+	ctx.textAlign = "left"
+	ctx.fillStyle = "white"
+	ctx.fillText("Score", 10, 40)
+	ctx.fillText(players[0].score + " vs " + players[1].score, 10, 70)
+
+	ctx.font = "20px monospace"
+	if (showHelp) {
+		ctx.fillText("Player 1: Arrow keys + spacebar", 10, 100)
+		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 120)
+		ctx.fillText("(no touchscreens sorry!)", 10, 140)
+		ctx.fillText("H - hide help text", 10, 160)
+		ctx.fillText("I - toggle high contrast mode", 10, 180)
+	} else {
+		ctx.fillText("H - show help", 10, 100)
+	}
 }
 
 function update() {
