@@ -319,6 +319,7 @@ function respawn(player) {
 	player.pos.y = player.spawnPoint.y
 	player.vel.x = 0
 	player.vel.y = 0
+	player.pos.angle = angleTo(player.pos, prize.pos)
 	addEffect(player.pos, player.index)
 	play("respawn")
 }
@@ -556,6 +557,11 @@ function transferVel(velOut, velIn, factor) {
 
 function randomAngle() {
 	return Math.random() * Math.PI * 2
+}
+
+function angleTo(from, to)
+{
+	return Math.atan2(to.y - from.y, to.x - from.x)
 }
 
 function wrap(pos) {
