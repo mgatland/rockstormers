@@ -113,6 +113,7 @@ var prizeSprite = {x:27, y:28, width:14, height: 24}
 var expSprites = []
 expSprites.push({x:34, y:0, width:28, height: 28})
 expSprites.push({x:64, y:1, width:12, height: 12})
+expSprites.push({x:41, y:53, width:40, height: 40}) //player respawn effect
 
 ///// Game stuff /////
 
@@ -138,6 +139,7 @@ teleportPrize()
 var messageDisplayTime = 45
 var players = []
 var defaultPlayerCount = 2
+var playerRespawnClearRadius = 20
 var playerCount = getPlayerCount()
 for (var i = 0; i < playerCount; i++) {
 	players.push(
@@ -322,6 +324,7 @@ function respawn(player) {
 	player.pos.angle = angleTo(player.pos, prize.pos)
 	addEffect(player.pos, player.index)
 	play("respawn")
+	destroyRocksNearPoint(player.pos)
 }
 
 function updatePlayers() {
@@ -366,7 +369,7 @@ function updatePlayers() {
 
 			var myRock = collideList(player, rocks)
 			if (myRock) {
-				explodeRock(myRock, player.vel, player.mass)
+				impactRock(myRock, player.vel, player.mass)
 				explodePlayer(player)
 			}
 
@@ -511,7 +514,7 @@ function addRock(x, y, type) {
 	return rock
 }
 
-function explodeRock(rock, expVel, mass) {
+function impactRock(rock, expVel, mass) {
 	addExplosion(rock.pos, 0)
 	transferVel(rock.vel, expVel, mass / rock.mass)
 	/*if (rock.type < 2) {
@@ -524,6 +527,11 @@ function explodeRock(rock, expVel, mass) {
 		}
 	}
 	rock.alive = false*/
+}
+
+function destroyRock(rock) {
+	addExplosion(rock.pos, 0)
+	rock.alive = false
 }
 
 function addExplosion(pos, type) {
@@ -612,6 +620,16 @@ function getPlayerCount() {
 	var pCount = parseInt(getQueryVariable("p"))
 	if (pCount > 0 && pCount <= 4) return pCount
 	return defaultPlayerCount
+}
+
+function destroyRocksNearPoint(pos) {
+	addExplosion(pos, 2)
+	var explosion = {pos:pos, radius:playerRespawnClearRadius}
+	rocks.forEach(function (rock) {
+		if (collides(explosion, rock)) {
+			destroyRock(rock)
+		}
+	})
 }
 
 //Utilities
