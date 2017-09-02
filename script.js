@@ -387,6 +387,10 @@ function updatePlayers() {
 			if (myHitFriend) {
 				explodePlayer(player)
 				explodePlayer(myHitFriend)
+				//hack: move them apart so their score displays don't overlap
+				var angle = angleTo(player.pos, myHitFriend.pos)
+				moveInDirection(player.pos, angle, -54)
+				moveInDirection(myHitFriend.pos, angle, 54)
 			}
 
 			move(player)
