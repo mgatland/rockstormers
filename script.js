@@ -138,6 +138,7 @@ var prize = {
 teleportPrize()
 var messageDisplayTime = 45
 var scoreDisplayTime = 45
+var endRoundTime = 60*10
 var players = []
 var defaultPlayerCount = 2
 var playerRespawnClearRadius = 20
@@ -158,6 +159,7 @@ for (var i = 0; i < playerCount; i++) {
 		mass: 3,/*lower mass but we are sloweds by friction*/
 		deaths:0,
 		score:0,
+		oldScore:0,
 		messages:[],
 		index:i,
 		spawnPoint:{x:0, y:0}
@@ -304,13 +306,14 @@ function update() {
 
 	if (gameState === "end") {
 		endTimer++
-		if (endTimer > 60*10) { //framerate dependent
+		if (endTimer > endRoundTime) { //framerate dependent
 			gameState = "playing"
 			endMessage = ""
 			endTimer = 0
 			startTimer = startTimerTime
 			players.forEach(p => {
 				p.score = 0
+				p.messages.length = 0
 				respawn(p)
 			})
 		}
@@ -396,12 +399,16 @@ function updatePlayers() {
 
 		if (gameState === "playing" && player.score >= scoreLimit) {
 			gameState = "end"
-			endMessage = "Player " + (player.index + 1) + " wins!"
+			endMessage = "Game Over"
+			players.forEach(p => {
+				if (p != player) addMessage(p, "Nice try", endRoundTime)
+			})
+			addMessage(player, "Winner!", endRoundTime)
 		}
 
 		if (player.messages.length > 0) {
-			player.messages[0].age++
-			if (player.messages[0].age > messageDisplayTime) {
+			player.messages[0].age--
+			if (player.messages[0].age <= 0) {
 				player.messages.shift()
 			}
 		}
@@ -430,6 +437,7 @@ function explodePlayer(player)
 
 function addScore(player, amount)
 {
+	if (gameState === "end") return //no scoring on end screen
 	player.oldScore = player.score
 	player.score += amount
 	if (player.score > 100) player.score = 100
@@ -438,9 +446,9 @@ function addScore(player, amount)
 	player.scoreWasGood = (amount >= 0)
 }
 
-function addMessage(player, messageString)
+function addMessage(player, messageString, timer)
 {
-	player.messages.push({text:messageString, age:0})
+	player.messages.push({text:messageString, life:timer})
 }
 
 function destroyPrize() {
@@ -657,11 +665,11 @@ function getQueryVariable(variable)
 function drawMessage(ent, text) {
 	ctx.font = "40px monospace"
 	ctx.textAlign = "center"
-	ctx.fillText(text, ent.pos.x, ent.pos.y - ent.radius - 10)
+	ctx.fillText(text, ent.pos.x, ent.pos.y - ent.radius - 64)
 }
 
 function drawScore(ent) {
-	if (ent.scoreDisplayTimer > 0) {
+	if (ent.scoreDisplayTimer > 0 || gameState === "end") {
 		ent.scoreDisplayTimer--
 		var radius = ent.radius + 50
 		var arc = ent.oldScore * (Math.PI * 2) / scoreLimit
