@@ -252,9 +252,8 @@ function drawHud() {
 		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 140)
 		ctx.fillText("(Game controllers? Use the triggers to move and shoot!)", 10, 160)
 		ctx.fillText("H - hide help text", 10, 180)
-		ctx.fillText("I - toggle high contrast mode", 10, 200)
-		ctx.fillText("Add ?p=4 to the URL for 4-player mode", 10, 220)
-		ctx.fillText("(4-player mode requires 2 or more game controllers)", 10, 240)
+		ctx.fillText("Add ?p=4 to the URL for 4-player mode", 10, 200)
+		ctx.fillText("(4-player mode requires 2 or more game controllers)", 10, 220)
 	} else {
 		ctx.fillText("H - show help", 10, 100)
 	}
