@@ -85,9 +85,7 @@ function setKey(keyCode, state) {
 		 	break
 		case 73: //i
 		 	if (state===true) {
-		 		highConstrast = !highConstrast
-		 		var spriteOffset = highConstrast ? 2 : 0
-		 		players.forEach(p => p.sprite = playerSprites[(p.index+spriteOffset) % playerSprites.length])
+		 		hideText = !hideText
 		 	}
 		 	break		 
 	}
@@ -185,7 +183,7 @@ players.forEach(p => {p.pos.x = p.spawnPoint.x; p.pos.y = p.spawnPoint.y})
 var rockMass = [40, 20, 10]
 var minRockDensity = 200*200;
 
-var highConstrast = false;
+var hideText = false;
 var showHelp = false;
 var gamepad = new Gamepad();
 
@@ -235,27 +233,26 @@ function draw() {
 }
 
 function drawHud() {
-	ctx.font = "30px monospace"
+	ctx.font = "20px monospace"
 	ctx.textAlign = "left"
 	ctx.fillStyle = "white"
-	ctx.fillText("Score", 10, 40)
 	var scoreString = players[0].score
 	for(var i = 1; i < playerCount; i++) {
 		scoreString += " vs " + players[i].score
 	}
-	ctx.fillText(scoreString, 10, 70)
+	if (!hideText) ctx.fillText(scoreString, 10, 20)
 
-	ctx.font = "20px monospace"
 	if (showHelp) {
 		ctx.fillText("Get the gem! First to 100 points wins", 10, 100)
 		ctx.fillText("Player 1: Arrow keys + spacebar", 10, 120)
 		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 140)
 		ctx.fillText("(Game controllers? Use the triggers to move and shoot!)", 10, 160)
-		ctx.fillText("H - hide help text", 10, 180)
-		ctx.fillText("Add ?p=4 to the URL for 4-player mode", 10, 200)
-		ctx.fillText("(4-player mode requires 2 or more game controllers)", 10, 220)
+		ctx.fillText("H - toggle help text", 10, 180)
+		ctx.fillText("I - toggle all text", 10, 200)
+		ctx.fillText("Add ?p=4 to the URL for 4-player mode", 10, 220)
+		ctx.fillText("(4-player mode requires 2 or more game controllers)", 10, 240)
 	} else {
-		ctx.fillText("H - show help", 10, 100)
+		if (!hideText) ctx.fillText("H - show help", 10, 40)
 	}
 
 	if (startTimer > 0) {
