@@ -137,6 +137,7 @@ var prize = {
 	}
 teleportPrize()
 var messageDisplayTime = 45
+var scoreDisplayTime = 45
 var players = []
 var defaultPlayerCount = 2
 var playerRespawnClearRadius = 20
@@ -227,6 +228,7 @@ function draw() {
 		if (p.messages.length > 0) {
 			drawMessage(p, p.messages[0].text)
 		}
+		drawScore(p)
 	})
 }
 
@@ -374,8 +376,7 @@ function updatePlayers() {
 			}
 
 			if (collides(prize, player)) {
-				player.score += 10
-				addMessage(player, "+10")
+				addScore(player, 10)
 				destroyPrize()
 			}
 
@@ -422,10 +423,19 @@ function explodePlayer(player)
 	play("playerExplode")
 	player.alive = false
 	player.deaths++
-	player.score--
 	player.respawnCounter = 60
 	addExplosion(player.pos, 0)
-	addMessage(player, "-1")
+	addScore(player, -1)
+}
+
+function addScore(player, amount)
+{
+	player.oldScore = player.score
+	player.score += amount
+	if (player.score > 100) player.score = 100
+	if (player.score < 0) player.score = 0
+	player.scoreDisplayTimer = scoreDisplayTime
+	player.scoreWasGood = (amount >= 0)
 }
 
 function addMessage(player, messageString)
@@ -434,7 +444,7 @@ function addMessage(player, messageString)
 }
 
 function destroyPrize() {
-	prize.respawnCounter = 30
+	prize.respawnCounter = 45
 	prize.alive = false
 	play("pickup")
 	play("score")
@@ -648,6 +658,33 @@ function drawMessage(ent, text) {
 	ctx.font = "40px monospace"
 	ctx.textAlign = "center"
 	ctx.fillText(text, ent.pos.x, ent.pos.y - ent.radius - 10)
+}
+
+function drawScore(ent) {
+	if (ent.scoreDisplayTimer > 0) {
+		ent.scoreDisplayTimer--
+		var radius = ent.radius + 50
+		var arc = ent.oldScore * (Math.PI * 2) / scoreLimit
+		if (arc < 0) arc = 0
+		var start = Math.PI/2
+		ctx.beginPath()
+		ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"
+		ctx.lineWidth = 5
+		ctx.arc(ent.pos.x, ent.pos.y, radius, 0, Math.PI*2, false)
+		ctx.stroke()
+
+		ctx.beginPath()
+		ctx.strokeStyle = "white"
+		ctx.arc(ent.pos.x, ent.pos.y, radius, start, start+arc, false)
+		ctx.stroke()
+
+		ctx.fillStyle = (ent.scoreWasGood) ? "white" : "red"
+		if (ent.oldScore < ent.score) ent.oldScore++
+		if (ent.oldScore > ent.score && ent.scoreDisplayTimer < scoreDisplayTime - 8) ent.oldScore--
+		ctx.font = "40px monospace"
+		ctx.textAlign = "center"
+		ctx.fillText(ent.oldScore, ent.pos.x, ent.pos.y - ent.radius - 10)
+	}
 }
 
 function drawSprite(pos, sprite) {
