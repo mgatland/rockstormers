@@ -670,6 +670,7 @@ function getQueryVariable(variable)
 function drawMessage(ent, text) {
 	ctx.font = "40px monospace"
 	ctx.textAlign = "center"
+	ctx.fillStyle = "white"
 	ctx.fillText(text, ent.pos.x, ent.pos.y - ent.radius - 64)
 }
 
