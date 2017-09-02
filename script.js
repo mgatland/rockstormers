@@ -247,10 +247,10 @@ function drawHud() {
 
 	ctx.font = "20px monospace"
 	if (showHelp) {
-		ctx.fillText("Get 100 points to win", 10, 100)
+		ctx.fillText("Get the gem! First to 100 points wins", 10, 100)
 		ctx.fillText("Player 1: Arrow keys + spacebar", 10, 120)
 		ctx.fillText("Player 2: WASD + Shift (or F)", 10, 140)
-		ctx.fillText("(no touchscreens sorry! but gamepads work!)", 10, 160)
+		ctx.fillText("(Game controllers? Use the triggers to move and shoot!)", 10, 160)
 		ctx.fillText("H - hide help text", 10, 180)
 		ctx.fillText("I - toggle high contrast mode", 10, 200)
 		ctx.fillText("Add ?p=4 to the URL for 4-player mode", 10, 220)
