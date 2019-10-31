@@ -113,6 +113,12 @@ expSprites.push({x:34, y:0, width:28, height: 28})
 expSprites.push({x:64, y:1, width:12, height: 12})
 expSprites.push({x:41, y:53, width:40, height: 40}) //player respawn effect
 
+var hatSprites = []
+hatSprites.push({x:76, y:0, width:10, height:10, yOffset:-8})
+hatSprites.push({x:76, y:11, width:11, height:9, yOffset:-8})
+hatSprites.push({x:76, y:43, width:15, height:8, yOffset:-8})
+hatSprites.push({x:76, y:28, width:15, height:14, yOffset:-9})
+
 ///// Game stuff /////
 
 var scale = 1
@@ -206,7 +212,13 @@ function tickGame() {
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	players.forEach(function (p) {
-		if (p.alive) drawSprite(p.pos, p.sprite)
+		if (p.alive) {
+			drawSprite(p.pos, p.sprite)
+			// why was i adding this?!?!?
+			// var hatSprite = hatSprites[3]
+			// var pos = {x:p.pos.x, y:p.pos.y+hatSprite.yOffset,angle:0}
+			// drawSprite(pos, hatSprite)
+		}
 	})
 	shots.forEach(function (shot) {
 		drawSprite(shot.pos, shotSprite)
